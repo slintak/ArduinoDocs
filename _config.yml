@@ -1,0 +1,7 @@
+safe: true
+lsi: false
+pygments: true
+markdown: kramdown
+relative_permalinks: false
+google_analytics_id: UA-22041602-5
+

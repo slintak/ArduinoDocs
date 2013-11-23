@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="cs-CZ">
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Arduino Dokumentace, píše Vlastimil Slinták" />
+    <title>{{ page.title }}</title>
+    <link rel="stylesheet" href="{{ site.url }}/css/style.css" />
+    <link rel="stylesheet" href="{{ site.url }}/css/pygments.css" />
+    <link rel="icon" type="image/x-icon" href="{{ site.url }}/favicon.png" />
+    <script src="{{ site.url }}/js/jquery-2.0.3.min.js"></script>
+    <script src="{{ site.url }}/js/jquery.capty.min.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</head>
+
+<body>
+  <!-- HEADER -->
+  {% include header.html %}
+
+  <!-- MAIN CONTENT -->
+  {{ content }}
+
+  <!-- FOOTER  -->
+  {% include footer.html %}
+  {% include analytics.html %}
+</body>
+    <script src="{{ site.url }}/js/main.js"></script>
+</html>

@@ -1,0 +1,3 @@
+$('.caption').capty({
+  animation: 'fixed'
+});

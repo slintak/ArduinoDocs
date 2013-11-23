@@ -1,0 +1,10 @@
+<div class="section-nav">
+    {% if page.prev_section != null %}
+      <a href="{{ site.url }}/docs/{{ page.prev_section }}/" class="prev">Zpět</a>
+    {% endif %}
+      <a href="{{ site.url }}/docs/obsah/" class="content">Obsah</a>
+    {% if page.next_section != null %}
+      <a href="{{ site.url }}/docs/{{ page.next_section }}/" class="next">Vpřed</a>
+    {% endif %}
+</div>
+
