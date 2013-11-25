@@ -1,6 +1,6 @@
 ---
 layout: docs
-title: Trocha teorie
+title: Napětí, proud a Ohmův zákon
 prev_section: 
 next_section: 
 permalink: /docs/teorie/

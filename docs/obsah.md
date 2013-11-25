@@ -5,11 +5,13 @@ permalink: /docs/obsah/
 ---
 
 ## Začínáme
+{% include docs_ul.html items='arduino-ide zkratky' %}
 
 ## Základy
-{% include docs_ul.html items='teorie io-piny' %}
+{% include docs_ul.html items='io-piny teorie' %}
 
 ## Knihovny
+{% include docs_ul.html items='serial' %}
 
 <div class="note info">
   <h5>Dokumentace zatím není dokončena</h5>
