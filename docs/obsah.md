@@ -10,6 +10,10 @@ permalink: /docs/obsah/
 ## Základy
 {% include docs_ul.html items='io-piny teorie' %}
 
+## Programovací jazyk
+
+{% include docs_ul.html items='programovaci-jazyk promenne' %}
+
 ## Knihovny
 {% include docs_ul.html items='serial' %}
 
