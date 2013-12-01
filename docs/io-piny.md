@@ -80,6 +80,8 @@ na pinu 13 se okamžitě objeví logická jedna (pokud k tomuto pinu připojíme
 s rezistorem, dioda se rozsvítí). Ihned jak k pinu 12 připojíme 0 V (GND), LED
 zhasne.
 
+![Dioda LED připojená k digitálním pinu 13 na desce Uno]({{site.url}}/imgs/arduino-led.jpg){: .caption}
+
 ### Více digitálních I/O pinů
 
 V případě, že potřebujete více digitálních pinů než obsahuje vaše verze Arduina, je možné použít i analogové vstupy (běžně označené jako `Analog in` nebo `Analog`). Práce s nimi je úplně stejná jako s digitálními vstupy/výstupy, pouze s tím rozdílem, že ve fukcích `pinMode()`, `digitalWrite()` a `digitalRead()` musíte před číslo pinu vložit písmeno `A`.
@@ -139,6 +141,8 @@ Ne vždy si v elektronice vystačíme jen s digitálním vstupem/výstupem. Rela
 práci s nimi maximálně zjednodušuje, ale i tak je potřeba vědět několik
 důležitých faktů.
 
+### Analogový vstup (AD převodník)
+
 Analogový vstup umožňuje 10 bitový, 6 kanálový AD převodník[^1], který je
 součástí mikrokontroléru Arduina. Pro analogový vstup lze tedy využít piny
 označené jako `A` nebo `Analog`, kterých je celkem šest. ADC dokáže převádět
@@ -146,6 +150,8 @@ napětí v rozsahu 0 až 5 V na digitální číslo (konkrétně na typ `unsigne
 se kterým pak můžeme v našem projektu dále pracovat.
 
 [^1]: Používaná zkratka je *ADC* neboli *analog-to-digital converter*. Ve starší české literatuře se můžete setkat ještě s *AČ* neboli *analogově číslicový* převodník.
+
+![Analogový vstup na desce Arduino Uno R3]({{site.url}}/imgs/arduino-analog-in.jpg){: .caption}
 
 Ukažme si to na jednoduchém příkladě -- na analogovém vstupu `A0` bude
 připojena prostřední nožička $$10\;\textrm{k}\Omega$$ potenciometru. Zbylé dva
@@ -208,9 +214,87 @@ dostatečná. Pokud budeme chtít snímat napětí na poteciometru nebo jakémko
 běžném senzoru, analogový vstup Arduina a funkce `analogRead()` nám bude
 stačit.
 
-**TODO**:
+### Analogový výstup (PWM)
 
-* analogový výstup,
-* změna referenčního napětí u ADC.
+Hned na úvod je potřeba zmínít následující fakt: Arduino žádný analogový výstup
+nemá. To, co dokumentace Arduina často nazývá analogovým výstupem je doopravdy
+signál s pulzně šířkovou modulací (PWM). V této sekci si celou problematiku
+podrobně vysvětlíme.
+
+Funkce, která v Arduinu ovládá *analogový* výstup je ``analogWrite()``. Ukažme
+si nejdříve její použití na příkladu:
+
+{% highlight c %}
+void setup() {
+  analogWrite(10, 128);
+  analogWrite(11, 32);
+}
+
+void loop() {}
+{% endhighlight %}
+
+Funkce ``analogWrite()`` očekává dva parametry -- nejdříve číslo pinu a pak
+hodnotu v rozsahu 0 až 255. Piny, se kterými tato funkce dokáže pracovat jsou
+většinou na desce označeny znakem vlnovky ``~``. Pro verzi Arduino Uno to jsou
+piny 3, 5, 6, 10 a 11.
+
+![Piny, které lze použít pro tzv. analogový výstup.]({{site.url}}/imgs/arduino-analog-out.jpg){: .caption}
+
+Pokud teď k výstupům 10 a 11 připojíme voltmetr (například digitální multimetr
+přepnutý na měření stejnosměrného napětí), na pinu číslo 10 naměříme napětí přibližně 2,5 V (v
+případě verze Uno) a na pinu č. 11 pak 0,63 V. Vztah pro výpočet napětí je:
+
+$$
+U = \frac{VCC}{2^8} \cdot x = \frac{5}{256} \cdot x\;\textrm{[V]}
+$$
+
+kde $$VCC$$ je napájecí napětí Arduina (nejčastěji 5 nebo 3,3 V) a $$x$$ je
+hodnota se kterou byla zavolána funkce `analogWrite()``.
+
+Nyní se podívejme, jaký je výstup Arduina doopravdy. Pokud vlastníte
+osciloskop, připojte oba výstupní piny na vstupní kanály osciloskopu. Naměřený
+signál by měl vypadat podobně jako na obrázku níže. Horní signál, vykreslený
+žlutou barvou je výstup na pinu č. 10 a spodní signál, modře, je zase výstup č.
+11.
 
 ![PWM neboli analogový výstup z Arduina]({{ site.url }}/imgs/arduino-pwm.png){: .caption}
+
+To je ale přece úplně jiný výsledek, než jaký jsme naměřili na voltmetru. Ten
+ukazoval stejnosměrné napětí o hodnotě 2,5 a 0,63 V, zatímco osciloskop nám
+zobrazil obdelníkový signál s různou délkou pulzu.
+
+Jelikož Arduino nemá opravdový analogový výstup, používá k tomuto účelu
+digitální výstup, který velmi rychle spíná tak, že vytvoří obdelníkový signál.
+Různou hodnotou funkce ``analogWrite()`` můžeme měnit střídu[^strida] tohoto
+signálu, viz obrázek níže.
+
+[^strida]: Střída je podíl času kdy je signál kladný a času celé periody.
+
+![Střída obdelníkového signálu je podíl času kladného pulzu a času celé periody]({{site.url}}/imgs/arduino-duty-cycle.png){: .caption}
+
+Dá se pak dále dokázat, že změna střídy obdelníkového signálu mění jeho
+průměrnou hodnotu, což je vlastně naše stejnosměrné napětí. Nedává to smysl?
+Nevadí, důležité je zapamatovat si, že:
+
+* Arduino nemá opravdový analogový výstup,
+* místo toho používá obdelníkový signál o frekvenci 490 Hz (na pinech 5 a 6 pak 980 Hz),
+* funkce ``analogWrite()`` dokáže měnit střídu tohoto signálu,
+* střída ovlivňuje jaké napětí na výstupu naměříme.
+
+Tento tzv. analogový výstup Arduina lze použít k ovládání např. ručkového
+měřicího přístroje (jako na obrázku níže) nebo ke změně intenzity LED, či
+jiného světelného zdroje, případně k regulaci otáček motorku, ovládání
+piezoreproduktoru, atd.
+
+![Ukázka použití nalogového výstupu]({{site.url}}/imgs/arduino-avomet.jpg){: .caption}
+
+A na závěr ještě pár poznámek:
+
+* Arduino Due obsahuje DA převodník, takže na pinech ``DAC0`` a ``DAC1`` je opravdový analogový výstup, žádné PWM.
+* Výstup na pinech 5 a 6 má vyšší frekvenci (980 Hz) a také jsou u nízkých hodnot velmi nepřesné.
+* Před samotným použitím ``analogWrite()`` není potřeba volat ``pinMode()``.
+
+**TODO**:
+
+* změna referenčního napětí u ADC.
+

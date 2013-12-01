@@ -2,7 +2,7 @@
 layout: docs
 title: Programovací jazyk
 prev_section: 
-next_section: 
+next_section: promenne
 permalink: /docs/programovaci-jazyk/
 ---
 
