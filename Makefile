@@ -5,3 +5,6 @@ run:
 
 convert:
 	cd imgs; make
+
+todo:
+	grep "TODO" docs/*.md

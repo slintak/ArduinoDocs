@@ -2,7 +2,7 @@
 layout: docs
 title: Proměnné a datové typy
 prev_section: programovaci-jazyk
-next_section: 
+next_section: vyrazy
 permalink: /docs/promenne/
 ---
 

@@ -12,7 +12,7 @@ permalink: /docs/obsah/
 
 ## Programovací jazyk
 
-{% include docs_ul.html items='programovaci-jazyk promenne' %}
+{% include docs_ul.html items='programovaci-jazyk promenne vyrazy' %}
 
 ## Knihovny
 {% include docs_ul.html items='serial' %}
