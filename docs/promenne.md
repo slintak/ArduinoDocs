@@ -191,7 +191,9 @@ který půjde použít na desce Uno, Due i jinde, pak je nutné s touto vlastnos
 jazyka počítat. Co ale když opravdu nutně potřebujete vytvořit proměnnou o
 přesně dané velikosti? 
 
-K tomuto účelu slouží hlavičkový soubor `<stdint.h>`, který je součástí tzv. standardní knihovny jazyka C. Na začátku vašeho kódu stačí tento soubor includovat:
+K tomuto účelu slouží hlavičkový soubor `<stdint.h>`, který je součástí tzv.
+standardní knihovny jazyka C. Na začátku vašeho kódu stačí tento soubor
+includovat:
 
 {% highlight c %}
 #include <stdint.h>
@@ -225,4 +227,6 @@ UINT8_MAX // Maximální hodnota typu uint8_t
 // a další
 {% endhighlight %}
 
-Více podrobností a seznam všech typů a konstant pro architekturu AVR viz [Standard Integer Types, nongnu.org](http://www.nongnu.org/avr-libc/user-manual/group__avr__stdint.html).
+Více podrobností a seznam všech typů a konstant pro architekturu AVR viz
+[Standard Integer Types, nongnu.org](http://www.nongnu.org/avr-libc/user-
+manual/group__avr__stdint.html).
