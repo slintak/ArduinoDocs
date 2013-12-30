@@ -15,4 +15,5 @@ permalink: /docs/zkratky/
 * **MCU** -- *microcontroler unit*, mikrokontrolér, mikropočítač
 * **PWM** -- *pulse width modulation*, pulzně šířková modulace
 * **RAM** -- *random access memory*, paměť s přímým nebo náhodným přístupem
+* **UART** -- *universal asynchronous receiver/transmitter*, *univerzální asynchronní přijímač/vysílač*
 * **VCC** -- napájecí napětí

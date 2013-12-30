@@ -15,7 +15,7 @@ permalink: /docs/obsah/
 {% include docs_ul.html items='programovaci-jazyk promenne vyrazy' %}
 
 ## Knihovny
-{% include docs_ul.html items='serial' %}
+{% include docs_ul.html items='knihovny serial' %}
 
 <div class="note info">
   <h5>Dokumentace zatím není dokončena</h5>
