@@ -143,8 +143,70 @@ void loop() {
 Pro Arduino Due platí to samé jako pro Mega, pouze s tím rozdílem, že se
 nepoužívá napětí 5 V ale 3,3 V. U Arduina Leonardo je pouze jeden *Serial*.
 
+## Funkce *serialEvent()*
+
+Knihovna *Serial* poskytuje zajímavou funkci `serialEvent()`. Tato funkce se
+zavolá automaticky, pokud Arduino přijalo nějaká data. Funkci `serialEvent()`
+nespouští přerušení, ale volá se až po dokončení jednoho průchodu funkce
+`loop()`. To znamená, že pokud hlavní programová smyčka obsahuje časově
+náročný kód nebo spoustu funkcí `delay()`, bude zpracování dat z UARTu
+pomalejší.
+
+Tento jednoduchý příklad ukazuje jak se s funkcí `serialEvent()` pracuje.
+Arduino bude přijatá data ukládat do paměti a jakmile načte znak nového řádku
+`\n`, vytiskne načtený řetězec zpět.
+
+{% highlight c %}
+
+String inputString = "";         // Buffer, řetězec na příchozí data
+boolean stringComplete = false;  // Je řetězec kompletní?
+
+void setup() {
+  // Nastav rychlost UARTu na 9600 baudů.
+  Serial.begin(9600);
+  // Připraví v paměti prostor pro 200 znaků.
+  inputString.reserve(200);
+}
+
+void loop() {
+  // Pokud jsme načetli znak nového řádku, bude proměnná
+  // `stringComplete` nastavena na `TRUE`.
+  if (stringComplete) {
+    // Vytiskni načtená data
+    Serial.println(inputString); 
+    // Vyprázdni buffer.
+    inputString = "";
+    stringComplete = false;
+  }
+}
+
+void serialEvent() {
+  while (Serial.available()) {
+    // Přečti jeden přijatý znak.
+    char inChar = (char)Serial.read(); 
+    // Přidej ho do bufferu
+    inputString += inChar;
+    // Řetězec je kompletní jakmile přijmeme znak nového řádku
+    if (inChar == '\n') {
+      stringComplete = true;
+    } 
+  }
+} 
+{% endhighlight %} 
+
+Tento způsob práce s rozhraním UART se hodí zejména v případech, kdy nechceme
+přijatá data zpracovávat ihned, ale *až bude čas* nebo *až načteme dostatečný
+počet znaků*.
+
+Pamatujte si, že funkce `serialEvent()` se nevykonává paralelně s `loop()`,
+ani není spouštěna asynchronně pomocí přerušení.
+
+<div class="note info">
+  <h5>Arduino Esplora, Leonardo a Micro</h5>
+  <p>Tato funkce není v současné době kompatibilní s deskami Esplora, Leonardo a Micro. Na těchto deskách nebude fungovat.</p>
+</div>
+
 **TODO:**
 
 * Zmínit velikost bufferu,
-* funkci `serialEvent()`,
 * a funkce `parseFloat()`, `parseInt()`.

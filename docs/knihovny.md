@@ -128,6 +128,8 @@ void loop() {
 Pokud bychom k Arduino později připojili druhý displej, stačí jej
 inicializovat a pracovat s ním stejně jako s prvním:
 
+
+
 {% highlight c %}
 #include <LiquidCrystal.h>
 
@@ -149,6 +151,8 @@ void loop() {
   // ...
 }
 {% endhighlight %}
+
+
 
 Dynamické knihovny se tedy musí nejdříve inicializovat a pak se s nimi pracuje
 úplně stejně jako se statickými. Pouze se knihovní funkce nevolají s jménem
