@@ -6,11 +6,11 @@ next_section:
 permalink: /docs/serial/
 ---
 
-Knihovna `Serial` je jedna z nejpoužívanějších částí Arduina. Umožňuje
-komunikaci mezi Arduinem a připojeným osobním počítačem, případně jakýmkoliv
-jiným zařízením, které dokáže komunikovat po rozhraní UART. Toto rozhraní
-používá dva piny RX a TX, které jsou v případě Arduino Uno na digitálních
-pinech `0` a `1`.
+Knihovna `Serial` umožňuje ovládat rozhraní UART a zároveň je to jedna z
+nejpoužívanějších částí Arduina. Umožňuje komunikaci mezi Arduinem a
+připojeným osobním počítačem, případně jakýmkoliv jiným zařízením, které
+dokáže komunikovat po UARTu. Toto rozhraní používá dva piny RX a TX,
+které jsou v případě Arduino Uno na digitálních pinech `0` a `1`.
 
 Komunikace je obousměrná a vysílání dat může zahájit kterákoliv strana. To
 znamená, že Arduino i počítač může začít posílat data ihned a nemusí čekat na
@@ -107,6 +107,91 @@ rychlosti jsou vhodnější a některé ne. Pokud např. zvolíme rychlost 11520
 baudů, bude chyba v čase až 3,5%, což může v některých případech způsobit
 ztrátu nebo poškození dat. Více o tomto tématu naleznete v [datasheetu
 ATMega328P](http://www.atmel.com/Images/doc8161.pdf) v sekci 20.3.
+
+## Příjem dat a příchozí buffer
+
+Jak jsme si již na začátku řekli, rozhraní UART používá dvě signálové cesty,
+nazývané RX a TX. Každá z obou připojených stran může zahájit komunikaci a
+vyslat tolik dat, kolik potřebuje. Z toho vyplývá, že příjem dat druhou
+stranou není nijak zaručen. My můžeme z osobního počítače odeslat klidně
+tisíce znaků, ovšem pokud Arduino *neposlouchá* a data neukládá, jsou ztracena
+a my se o tom nikdy nedozvíme. Jelikož je Arduino řádově mnohem pomalejší než
+dnešní PC, je nutné na toto omezení pamatovat.
+
+Příjem dat na straně Arduina probíhá následovně: každý znak, který na UART
+odešleme způsobí na straně Arduina přerušení. To znamená, že právě vykonávaný
+kód ve funkci `loop()` se dočasně pozastaví, z UARTu se načte jeden znak do
+paměti (bufferu) a pak se opět začne vykonávat kód v `loop()` od místa kde k
+přerušení došlo.
+
+Obsluhu přerušení a ukládání přijatých dat do bufferu za nás řeší knihovna
+Serial na *pozadí*. Pokud je příchozí buffer plný, knihovna začne přepisovat
+nejstarší přijatá data a tím pádem dojde k jejich ztrátě.
+
+Naší povinností (pokud o data nechceme přijít) je pravidelně ve funkci
+`loop()` (nebo ve funkci `serialEvent()`, viz dále) kontrolovat, jestli jsou k
+dospozici nějaká data a případně s nimi provést smysluplnou akci. K této
+kontrole slouží funkce `available()` a pracuje se s ní následovně:
+
+{% highlight c %}
+chat znak;
+
+void setup() {
+  Serial.begin(9600);
+}
+
+void loop() {
+  // Jakýkoliv užitečný kód.
+  // ...
+
+  if(Serial.available()) {
+    // Jsou k dispozici data.
+    // Načti jeden znak.
+    znak = Serial.read();
+  }
+
+  // Další užitečný kód.
+  // ...
+}
+{% endhighlight %}
+
+Během jednoho průchodu funkcí `loop()` načteme vždy jeden znak a následně s
+ním můžeme něco užitečného udělat.
+
+Pokud cheme načítat více znaků, kód se mírně změní:
+
+{% highlight c %}
+char znak;
+String retezec = "";         // Buffer, řetězec na příchozí data
+
+void setup() {
+  Serial.begin(9600);
+  // Připraví v paměti prostor pro 200 znaků.
+  inputString.reserve(200);
+}
+
+void loop() {
+  // Jakýkoliv užitečný kód.
+  // ...
+
+  while (Serial.available()) {
+    // Jsou k dispozici data.
+    // Načti jeden znak.
+    char znak = Serial.read(); 
+    // Přidej ho do bufferu
+    retezec += znak;
+  }
+
+  // Další užitečný kód.
+  // ...
+
+  // Vyprázdni buffer s přijatým řetězcem
+  retezec = "";
+}
+{% endhighlight %}
+
+V tomto případě máme po skončení cyklu `while` v proměnné `retezec` celý
+řetězec přijatých znaků se kterým můžeme dále pracovat.
 
 ## Více rozhraní UART
 
@@ -206,7 +291,62 @@ ani není spouštěna asynchronně pomocí přerušení.
   <p>Tato funkce není v současné době kompatibilní s deskami Esplora, Leonardo a Micro. Na těchto deskách nebude fungovat.</p>
 </div>
 
-**TODO:**
+## Funkce pro příjem čísel
 
-* Zmínit velikost bufferu,
-* a funkce `parseFloat()`, `parseInt()`.
+Ve světě Arduina se po rozhraní UART nejčastěji posílají textová data, tedy
+řetězce obsahující pouze znaky ASCII (`a` až `z`, `A` až `Z`, `0` až `9` a
+další speciální znaky, které obsahuje ASCII tabulka). Pokud z počítače
+odešleme například řetězec:
+
+{% highlight c %}
+"Cisla: 123, 456, 9010"
+{% endhighlight %}
+
+Arduino přijme celkem 21 znaků. Pokud chceme s tři výše uvedenými čísly
+pracovat jako s čísly a ne jako s řetězcem, je nutné je nejdříve
+překonvertovat na správný typ, v našem příkladě na `int`. Knihovna Serial nám
+k tomu poskytuje funkci `parseInt()`, která v přijatém řetězci hledá první
+výskyt znaků `0` až `9` a ty poté konvertuje na číslo:
+
+{% highlight c %}
+void setup() {
+  Serial.begin(9600);
+}
+
+void loop() {
+  while(Serial.available()) {
+    int cislo1 = Serial.parseInt(); 
+    int cislo2 = Serial.parseInt(); 
+    int cislo3 = Serial.parseInt(); 
+
+    // Nyní máme v proměnných následující obsah
+    //   cislo1 = 123
+    //   cislo2 = 456
+    //   cislo3 = 9010
+    // a lze s nimi pracovat jako s typem int.
+} 
+{% endhighlight %} 
+
+Případně pokud očekáváme desetinná čísla (ovšem pozor, musí obsahovat
+desetinnou tečku, ne čárku) můžeme použít funkci `parseFloat()`:
+
+{% highlight c %}
+void setup() {
+  Serial.begin(9600);
+}
+
+void loop() {
+  while(Serial.available()) {
+    float cislo1 = Serial.parseFloat(); 
+    // ...
+} 
+{% endhighlight %} 
+
+Tyto funkce jsou užitečné v případech, kdy jsme si jisti, že data do Arduina
+chodí ve správném formátu. To jsou např. situace kdy si sami z PC odesíláme
+předem připravená data a jsme si na 100% jistí, že mají správný formát.
+
+Pokud načítáte data z cizího zdroje (aplikace v PC, jiné zařízení, druhé
+Arduino, ...) nespoléhejte se na jejich správnost a vždy se snažte data
+validovat a v případě, že jsou chybná tak zahodit. Toto pokročilé téma bude
+popsáno v jiné části této dokumentace.
