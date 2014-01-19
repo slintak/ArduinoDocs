@@ -125,10 +125,8 @@ void loop() {
 }
 {% endhighlight %}
 
-Pokud bychom k Arduino později připojili druhý displej, stačí jej
+Pokud bychom k Arduinu později připojili druhý displej, stačí jej
 inicializovat a pracovat s ním stejně jako s prvním:
-
-
 
 {% highlight c %}
 #include <LiquidCrystal.h>

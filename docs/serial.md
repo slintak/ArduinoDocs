@@ -317,7 +317,8 @@ void loop() {
   while(Serial.available()) {
     int cislo1 = Serial.parseInt(); 
     int cislo2 = Serial.parseInt(); 
-    int cislo3 = Serial.parseInt(); 
+    int cislo3 = Serial.parseInt();
+  }
 
     // Nyní máme v proměnných následující obsah
     //   cislo1 = 123
@@ -338,6 +339,7 @@ void setup() {
 void loop() {
   while(Serial.available()) {
     float cislo1 = Serial.parseFloat(); 
+  }
     // ...
 } 
 {% endhighlight %} 

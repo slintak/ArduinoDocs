@@ -8,7 +8,7 @@ permalink: /docs/obsah/
 {% include docs_ul.html items='arduino-ide zkratky' %}
 
 ## Základy
-{% include docs_ul.html items='io-piny teorie' %}
+{% include docs_ul.html items='io-piny teorie uduino' %}
 
 ## Programovací jazyk
 
