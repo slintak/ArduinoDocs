@@ -27,6 +27,7 @@ obvod pro stabilizaci napájecího napětí, obvod pro komunikaci s osobním
 počítačem přes USB (převodník USB-UART) a množství konektorů, které usnadňují
 práci během vývoje.
 
+
 ## Schéma zapojení
 
 Pokud z oficiální desky Arduina odstraníme konektory, obvod pro stabilizaci
@@ -50,13 +51,38 @@ připojena k pinu `PB5`, což na Arduinu odpovídá digitálním pinu `D13`.
 
 ![Kompletní zapojení na nepájivém poli. Obvod je napájen 5 V z připojeného UART převodníku.]({{site.url}}/imgs/arduino-breadboard-foto.jpg){: .caption}
 
+## Seznam potřebných součástek
+
+Ještě jednou si přehledně vypíšeme seznam potřebných součástek k sestavení
+obvodu kompatibilního s Arduinem:
+
+* `R2` -- rezistor 10 kΩ
+* `C1` -- keramický kondenzátor 100 nF
+* `C2` -- keramický kondenzátor 22 pF
+* `C3` -- keramický kondenzátor 22 pF
+* `C4` -- keramický kondenzátor 100 nF
+* `Q1` -- krystal 16 MHz
+* `U1` -- mikrokontrolér ATMega328P
+
+Pokud budete k minimálnímu Arduinu chtít připojit i LED k digitálnímu pinu
+D13, pak ještě potřebujete:
+
+* `R1` -- rezistor 1 kΩ
+* `LED1` -- zelená LED
+
+Pozor, mikrokontrolér ATMega328P musí mít ve své paměti nahraný bootloader,
+viz text dále.
+
+![Ze všech součástek je nejdůležitější ATMega328P]({{site.url}}/imgs/uduino-soucastky.jpg){: .caption}
+
 ## Programování pomocí Arduino IDE
 
 Nyní máme na nepájivém poli sestaven obvod, který můžeme nazvat například
 *miniaturní Arduino*. Abychom jej mohli programovat pomocí Arduino IDE, je
 nutné k obvodu připojit převodník USB na UART. To je obvod, který se na straně
 osobního počítače chová jako sériová linka. Cokoliv na tuto linku pošleme se
-*objeví* na jeho výstupu jako série bajtů.
+*objeví* na jeho výstupu jako série bajtů. Arduino IDE bude tento převodník
+využívat k naprogramování mikrokontroléru.
 
 ![Ukázka USB-UART převodníku vhodného k programování *minimálního Arduina*]({{site.url}}/imgs/uart-prevodnik.jpg){: .caption}
 
@@ -70,13 +96,13 @@ Tento převodník se připojí k Arduinu následujícím způsobem:
 * `RX` na převodníku k pinu `PD0` na ATMega,
 * `TX` na převodníku k pinu `PD1` na ATMega,
 * `GND` na převodníku k `GND` na ATMega,
-* `5V` na převodníku `VCC` na ATMega,
+* `5V` na převodníku k `VCC` na ATMega,
 * `DTR` na převodníku ke kondenzátoru `C1`.
 
 Poslední řádek je nejdůležitější. Signál `DTR` z převodníku je potřeba
 připojit ke kondenzátoru `C1`, jehož druhý vývod je připojen k
 mikrokontroléru. To způsobí, že poté co v Arduino IDE klikneme na tlačítko
-*upload*, mikrokontrolér se automaticky restartuje.
+*upload*, mikrokontrolér se automaticky restartuje a poté i naprogramuje.
 
 V tomto okamžiku ještě jednou zkontrolujte správnost celého zapojení včetně
 UART převodníku a pokud je vše v pořádku, připojte převodník k osobnímu
@@ -87,14 +113,63 @@ Teď již stačí spustit Arduino IDE, vybrat program který chceme do Arduina
 nahrát a kliknout na tlačítko *upload*. Pokud je vše zapojeno bez chyby,
 programování proběhne až do konce.
 
+## Značení pinů mikrokontroléru
+
+Oficiální deska Arduino Uno používá k označení digitálních pinů písmeno `D` a
+čísla od 0 do 13. K označení analogových pinů je to písmeno `A` a čísla 0 až
+5. V katalogovém listu mikrokontroléru ATMega328P toto označení ale nenajdete.
+
+Následující obrázek nám ulehčí orientaci v tom, který pin odpovídá kterému
+číslu.
+
 ![Značení pinů mikrokontroléru ATMega vs. Arduino Uno]({{site.url}}/imgs/arduino-breadboard-pinout.png){: .caption}
 
-![Ze všech součástek je nejdůležitější ATMega328P]({{site.url}}/imgs/uduino-soucastky.jpg){: .caption}
+## Bootloader neboli zavaděč
+
+Srdcem Arduina Una a našeho zjednodušeného zapojení je mikrokontrolér
+ATMega328P. Tento MCU od firmy Atmel má celkem 32 kB paměti flash do které se
+programuje uživatelský kód. Od výroby je tato paměť prázdná a k jejímu
+naprogramování slouží tzv. programátor. Originální Arduino však tento
+programátor nepoužívá, místo něj si vystačí jenom v převodníkem USB-UART. Jak
+docílit toho, aby se stejně choval i náš mikrokontrolér?
+
+Mikrokontroléry v deskách Arduina obsahují na konci paměti flash speciální
+kód, kterému se říká bootloader. Ten je spouštěn po resetu MCU a kontroluje,
+jestli se uživatel snaží komunikovat po rozhraní UART. Pokud ne, spustí se
+uživatelský kód na začátku paměti flash. Pokud ale uživatel po resetu odešle
+na UART speciální sekvenci znaků, mikrokontrolér začne z UARTu číst data a sám
+sebe programovat. Jak to celé funguje není pro nás příliš zajímavé, pokud
+byste se o tomto procesu chtěli dozvědět více, můžete si přečíst článek
+[bootloader v mikrokontrolérech AVR](http://uart.cz/721/bootloader-v-avr/).
+
+Z předchozího odstavce si zapamatujme jedno: aby se ATMega328P chovala stejně
+jako Arduino, musí mít v paměti bootloader. Bez něj nebude naše *minimální
+Arduino* na nepájivém poli vůbec fungovat.
+
+ATMega328P s Arduino bootloaderem se dá sehnat dvěma způsoby:
+
+* buď si ji koupíme s již nahraným bootloaderem
+* nebo si do ní bootloader sami naprogramujeme.
+
+První variantu doporučuji začátečníkům. Druhá varianta je pro zkušenější
+uživatele kteří navíc vlastní AVR programátor.
+
+Nejdříve sestavte *minimální Arduino* na nepájivém poli a poté k němu připojte
+ISP programátor. Pomocí něj nahrajte do mikrokontroléru HEX soubor s
+bootloaderem -- najdete jej v [oficiálním Git repozitáři Arduina ve složce `bootloaders/optiboot`](https://github.com/arduino/Arduino/tree/master/hardware/arduino/bootloaders/optiboot). Je to soubor `optiboot_atmega328.hex`.
+
+Zároveň naprogramujte následující fuses:
+
+* HFUSE = 0xDE
+* LFUSE = 0xFF
+* EFUSE = 0x05
+
+Tyto fuses v MCU aktivují bootloader sekci, externí 16 MHz krystal a další.
+
+Pokud se vše podařilo, máme nyní na stole plně funkční obvod s ATMega328P,
+který se dá programovat přes USB-UART převodník pomocí Arduino IDE.
 
 **TODO**:
 
-* Podrobněji se rozepsat o zapojení,
-* ukázat sestavení na univerzální DPS,
 * podrobně jak se programuje,
 * jak nahrát bootloader do MCU,
-* UART převodník a jak ho použít,
