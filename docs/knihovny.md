@@ -30,7 +30,7 @@ které názorně ukazují její použití. Většina knihoven má dost intuitivn
 rozhraní a názvy funkcí samy napovídají jakou funkci provádějí.
 
 Některé vlastnosti mají ale všechny knihovny společné. Obecně se můžeme setkat
-s dvěma druhy knihoven. Abychom nemuseli zabýhat do zbytečných detailů,
+s dvěma druhy knihoven. Abychom nemuseli zabíhat do zbytečných detailů,
 pojmenujme si tyto dva typy *statické* a *dynamické* knihovny.
 
 ### Statické knihovny
